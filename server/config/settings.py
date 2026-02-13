@@ -13,10 +13,11 @@ FAISS_LABELS_PATH = os.path.join(DATA_DIR, "face_db_labels.pkl")
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 
 # Face Detection and Recognition
-DETECTION_THRESHOLD = 0.3  # Confidence threshold for face detection
-RECOGNITION_THRESHOLD = 0.3  # Similarity threshold for face recognition
+DETECTION_THRESHOLD = 0.5  # Slightly higher threshold for the smaller model
+RECOGNITION_THRESHOLD = 0.4  # Adjusted threshold for buffalo_s cosine similarity
 USE_FAISS = False  # Whether to use FAISS for database operations
-MODEL_NAME = "buffalo_l"  # InsightFace model name
+MODEL_NAME = "buffalo_s"  # Lighter model (MobileFaceNet) for CPU performance
+IS_PRODUCTION = os.environ.get("PRODUCTION", "false").lower() == "true"
 
 # Face Detection Context
 DET_SIZE = (640, 640)  # Detection size
