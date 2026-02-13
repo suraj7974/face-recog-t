@@ -1,0 +1,31 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server/data:/app/server/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    environment:
+      - PRODUCTION=true
+
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./server/data:/app/server/data
+      - ./logs:/app/logs
+    depends_on:
+      - backend
+    restart: unless-stopped
+    environment:
+      - API_SERVER_URL=http://backend:5000
+
+volumes:
+  face_data:

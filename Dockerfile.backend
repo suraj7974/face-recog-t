@@ -1,0 +1,34 @@
+# Dockerfile for Face Recognition Backend
+FROM python:3.9-slim
+
+# Install system dependencies for OpenCV and compilation
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements first to cache layers
+COPY server/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy server code
+COPY server/ ./server/
+COPY config/ ./config/
+# Create data directories
+RUN mkdir -p /app/server/data/celeb_images /app/server/data/uploads /app/logs
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PRODUCTION=true
+ENV PORT=5000
+
+# Expose port
+EXPOSE 5000
+
+# Run with Gunicorn
+# We need to run from root for config imports to work, so we use server.api_service:app
+# Ensure server/__init__.py exists or treat it as namespace package (Python 3.3+)
+CMD ["gunicorn", "--workers=2", "--bind=0.0.0.0:5000", "--timeout=60", "--chdir", "/app/server", "api_service:app"]

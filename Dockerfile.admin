@@ -1,0 +1,54 @@
+# Dockerfile for Admin Dashboard (Frontend + Backend)
+
+# Stage 1: Build Frontend
+FROM node:18-alpine as frontend-build
+WORKDIR /app/client
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY admin/client/package.json admin/client/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+# Copy source and build
+COPY admin/client/ ./
+RUN pnpm run build
+
+# Stage 2: Admin Backend
+FROM python:3.9-slim
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY server/requirements.txt ./server-reqs.txt
+COPY admin/server/requirements.txt ./admin-reqs.txt
+RUN pip install --no-cache-dir -r server-reqs.txt && \
+    pip install --no-cache-dir -r admin-reqs.txt
+
+# Copy backend code
+COPY admin/server/ ./admin/server/
+COPY server/ ./server/
+COPY config/ ./config/
+
+# Copy built frontend assets to admin server directory
+# The admin.py serves static files from its own directory
+COPY --from=frontend-build /app/client/dist/ ./admin/server/
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PRODUCTION=true
+ENV PORT=5001
+
+# Create logs directory
+RUN mkdir -p /app/logs
+
+EXPOSE 5001
+
+# Run Admin API
+CMD ["python3", "admin/server/admin.py"]
