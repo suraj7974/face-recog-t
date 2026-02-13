@@ -22,7 +22,7 @@ const Identities = ({ showToast }: IdentitiesProps) => {
     setIsLoading(true);
     try {
       const response = await getIdentities();
-      const sorted = (response.identities || []).sort((a, b) => a[0].localeCompare(b[0]));
+      const sorted = (response.identities || []).sort((a: any, b: any) => a[0].localeCompare(b[0]));
       setIdentities(sorted);
     } catch {
       showToast('Failed to load identities', 'error');

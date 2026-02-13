@@ -1,79 +1,110 @@
 import axios from 'axios';
-import { StatsResponse, RebuildStatus } from '../types';
+import type { 
+  IdentitiesResponse, 
+  PersonDetails, 
+  ApiResponse, 
+  LogResponse, 
+  RebuildStatus, 
+  StatsResponse 
+} from '../types';
 
-// Use relative path for API calls. This allows the app to work 
-// regardless of the domain or IP it is served from.
-// In development (Vite), the proxy in vite.config.ts handles the forwarding.
-// In production, the backend serves the frontend from the same origin.
-const API_BASE_URL = '/api';
+export type { PersonDetails } from '../types';
+
+// Use relative path for API calls to avoid CORS issues
+const API_BASE = '/api';
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: API_BASE,
 });
 
-export const getStats = async (): Promise<StatsResponse> => {
-  const response = await api.get('/stats');
+export const getIdentities = async (): Promise<IdentitiesResponse> => {
+  const response = await api.get<IdentitiesResponse>('/identities');
   return response.data;
 };
 
-export const getIdentities = async () => {
-  const response = await api.get('/identities');
+export const getPerson = async (name: string): Promise<PersonDetails> => {
+  const response = await api.get<PersonDetails>(`/person/${encodeURIComponent(name)}`);
   return response.data;
 };
 
-export const getPerson = async (name: string) => {
-  const response = await api.get(`/person/${name}`);
-  return response.data;
+// Helper function to get the full image URL
+export const getImageUrl = (person: string, filename: string): string => {
+  // In production, images are served from root/images/...
+  // In development (Vite), we proxy /images to the backend
+  return `/images/${encodeURIComponent(person)}/${encodeURIComponent(filename)}`;
 };
 
-export const enrollPerson = async (formData: FormData) => {
-  const response = await api.post('/enroll', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+export const enrollPerson = async (
+  name: string, 
+  info: string, 
+  images: FileList,
+  autoRebuild: boolean = true
+): Promise<ApiResponse> => {
+  const formData = new FormData();
+  formData.append('name', name);
+  formData.append('info', info);
+  formData.append('auto_rebuild', autoRebuild.toString());
+  Array.from(images).forEach((file) => {
+    formData.append('images', file);
   });
+  const response = await api.post<ApiResponse>('/enroll', formData);
   return response.data;
 };
 
-export const addImage = async (formData: FormData) => {
-  const response = await api.post('/add_image', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-  return response.data;
-};
-
-export const deletePerson = async (person: string) => {
+export const addImage = async (
+  person: string, 
+  image: File,
+  autoRebuild: boolean = true
+): Promise<ApiResponse> => {
   const formData = new FormData();
   formData.append('person', person);
-  const response = await api.post('/delete_person', formData);
+  formData.append('image', image);
+  formData.append('auto_rebuild', autoRebuild.toString());
+  const response = await api.post<ApiResponse>('/add_image', formData);
   return response.data;
 };
 
-export const deleteImage = async (person: string, filename: string) => {
+export const deletePerson = async (
+  person: string,
+  autoRebuild: boolean = true
+): Promise<ApiResponse> => {
+  const formData = new FormData();
+  formData.append('person', person);
+  formData.append('auto_rebuild', autoRebuild.toString());
+  const response = await api.post<ApiResponse>('/delete_person', formData);
+  return response.data;
+};
+
+export const deleteImage = async (
+  person: string,
+  filename: string,
+  autoRebuild: boolean = true
+): Promise<ApiResponse> => {
   const formData = new FormData();
   formData.append('person', person);
   formData.append('filename', filename);
-  const response = await api.post('/delete_image', formData);
+  formData.append('auto_rebuild', autoRebuild.toString());
+  const response = await api.post<ApiResponse>('/delete_image', formData);
   return response.data;
 };
 
-export const rebuildDatabase = async () => {
-  const response = await api.post('/rebuild_db');
+export const rebuildDatabase = async (): Promise<ApiResponse & { status?: RebuildStatus }> => {
+  const response = await api.post<ApiResponse & { status?: RebuildStatus }>('/rebuild_db');
   return response.data;
 };
 
 export const getRebuildStatus = async (): Promise<RebuildStatus> => {
-  const response = await api.get('/rebuild_status');
+  const response = await api.get<RebuildStatus>('/rebuild_status');
   return response.data;
 };
 
-export const getLatestLog = async () => {
-  const response = await api.get('/latest_log');
+export const getStats = async (): Promise<StatsResponse> => {
+  const response = await api.get<StatsResponse>('/stats');
+  return response.data;
+};
+
+export const getLatestLog = async (): Promise<LogResponse> => {
+  const response = await api.get<LogResponse>('/latest_log');
   return response.data;
 };
 

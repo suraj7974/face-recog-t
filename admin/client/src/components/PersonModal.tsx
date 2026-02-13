@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { PersonDetails } from '../services/api';
-import { getImageUrl, addImage, deletePerson, deleteImage } from '../services/api';
+import { addImage, deletePerson, deleteImage } from '../services/api';
 
 interface PersonModalProps {
   name: string;
@@ -123,9 +123,8 @@ const PersonModal = ({ name, personData, onClose, onPersonDeleted, onImageAdded,
           </h4>
           {personData?.images && personData.images.length > 0 ? (
             <div className="person-images">
-              {personData.images.map((img) => (
+              {personData.images.map((img: string) => (
                 <div key={img} className="person-image-card">
-                  <img src={getImageUrl(name, img)} alt={img} />
                   <div className="image-actions">
                     <button 
                       className="btn-delete"
