@@ -10,13 +10,17 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# Create virtual environment in project folder
+RUN python -m venv .venv
+ENV PATH="/app/.venv/bin:$PATH"
+
 # Copy requirements first to cache layers
 COPY server/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy server code
+# Copy server code (config is inside server/, so it gets copied with server/)
 COPY server/ ./server/
-COPY config/ ./config/
 # Create data directories
 RUN mkdir -p /app/server/data/celeb_images /app/server/data/uploads /app/logs
 

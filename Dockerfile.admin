@@ -25,16 +25,21 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
+# Create virtual environment in project folder
+RUN python -m venv .venv
+ENV PATH="/app/.venv/bin:$PATH"
+
 # Install Python dependencies
 COPY server/requirements.txt ./server-reqs.txt
 COPY admin/server/requirements.txt ./admin-reqs.txt
-RUN pip install --no-cache-dir -r server-reqs.txt && \
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r server-reqs.txt && \
     pip install --no-cache-dir -r admin-reqs.txt
 
 # Copy backend code
 COPY admin/server/ ./admin/server/
+# Copy the main server code which includes config
 COPY server/ ./server/
-COPY config/ ./config/
 
 # Copy built frontend assets to admin server directory
 # The admin.py serves static files from its own directory
