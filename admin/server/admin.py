@@ -51,11 +51,15 @@ def proxy_recognize():
         # Forward the request to the backend
         if "image" in request.files:
             files = {"image": (request.files["image"].filename, request.files["image"].read(), request.files["image"].content_type)}
-            response = requests.post(f"{API_SERVER_URL}/api/recognize", files=files, data=request.form, params=request.args)
+            response = requests.post(f"{API_SERVER_URL}/api/recognize", files=files, data=request.form, params=request.args, timeout=120)
         else:
-            response = requests.post(f"{API_SERVER_URL}/api/recognize", json=request.json, params=request.args)
+            response = requests.post(f"{API_SERVER_URL}/api/recognize", json=request.json, params=request.args, timeout=120)
         
         return (response.content, response.status_code, response.headers.items())
+    except requests.exceptions.ConnectionError:
+        return jsonify({"success": False, "error": "Backend API is unreachable. It might be crashing or restarting."}), 502
+    except requests.exceptions.Timeout:
+        return jsonify({"success": False, "error": "Backend API timed out processing the image."}), 504
     except Exception as e:
         return jsonify({"success": False, "error": f"Proxy error: {str(e)}"}), 500
 
@@ -273,6 +277,17 @@ def admin_page():
         return f"admin.html not found in {BASE_DIR}", 404
     return send_from_directory(str(BASE_DIR), "admin.html")
 
+# SPA Fallback: Serve index.html for any other route not matched by API
+@app.errorhandler(404)
+def not_found(e):
+    # If the request starts with /api or /images, return actual 404
+    if request.path.startswith("/api/") or request.path.startswith("/images/"):
+        return jsonify({"error": "Not found"}), 404
+    
+    # Otherwise, serve index.html for client-side routing
+    if (BASE_DIR / "index.html").exists():
+        return send_from_directory(str(BASE_DIR), "index.html")
+    return e
 
 @app.route("/api/identities")
 def api_identities():

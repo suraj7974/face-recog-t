@@ -315,14 +315,14 @@ const Dashboard = ({ showToast }: DashboardProps) => {
               <span className="action-desc">Browse identities</span>
             </button>
 
-            <button className="quick-action-btn" onClick={() => navigate('/logs')}>
+            <button className="quick-action-btn" onClick={() => navigate('/test')}>
               <div className="action-icon logs">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm0-10c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zM20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5V13H9v2.5L5.5 12 9 8.5V11h6V8.5l3.5 3.5-3.5 3.5z"/>
                 </svg>
               </div>
-              <span className="action-label">View Logs</span>
-              <span className="action-desc">System activity</span>
+              <span className="action-label">Test Image</span>
+              <span className="action-desc">Verify recognition</span>
             </button>
 
             <button className="quick-action-btn" onClick={handleRebuild} disabled={rebuildStatus?.is_rebuilding}>

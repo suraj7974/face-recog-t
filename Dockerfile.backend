@@ -35,4 +35,4 @@ EXPOSE 5000
 # Run with Gunicorn
 # We need to run from root for config imports to work, so we use server.api_service:app
 # Ensure server/__init__.py exists or treat it as namespace package (Python 3.3+)
-CMD ["gunicorn", "--workers=2", "--bind=0.0.0.0:5000", "--timeout=60", "--chdir", "/app/server", "api_service:app"]
+CMD ["gunicorn", "--workers=2", "--bind=0.0.0.0:5000", "--timeout=120", "--chdir", "/app/server", "api_service:app"]
